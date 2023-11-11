@@ -22,15 +22,15 @@ eventAssociationsMain = {
     "SupercruiseEntry": "Supercrusing in ",
     "SupercruiseExit": "Flying around ",
     "FSDJump": "Supercrusing in ",
-    "FSSSignalDiscovered": "Supercrusing in ",
+    #"FSSSignalDiscovered": "Supercrusing in ",
     "Undocked": "Flying in ",
     "LeaveBody": "Flying in ",
-    "Location": "Flying in ",
 }
 eventAssociationsDocked = {
     "Touchdown": "Landed on ",
     "Docked": "Docked at ",
     "DockingGranted": "Docked at ",
+    "DockingRequested": "Docked at ",
 }
 eventAssociationsCombat = {"UnderAttack": "In a fight!"}
 eventAssociationsPlanetside = {"LaunchSRV": "Driving on ", "ApproachBody": "Flying to ", }
@@ -117,10 +117,13 @@ def getStation(logs):
                 if logLine["event"] == "Location":
                     station_name = logLine.get("StationName", "")
                     log(f"Found station: {station_name}", "getStation")
-                    return station_name
+                if logLine["DockingRequested"] != None:
+                    station_name = logLine.get("StationName", "")
+                    log(f"Found station: {station_name}", "getStation")
             except Exception:  # If it gets muddled, it will return "Unknown station"
                 log("No station found", "getStation")
-                return "Unknown station"
+                station_name = "Unknown station"
+            return station_name
 
 
 
@@ -139,6 +142,15 @@ def eventHandler(event, logLineNum=0):
     if event == "Shutdown":
         return 0
     try:
+        if event == "Location":
+            log("Location entry detected!", "eventHandler")
+            fullLogLine = load(journalPath)[logLineNum]
+            if fullLogLine["Docked"] == True:
+                log("Docked", "eventHandler")
+                return "Docked at " + getStation(load(journalPath))
+            else:
+                log("Not docked", "eventHandler")
+                return "Flying around " + getSystem(load(journalPath))
         if event in eventAssociationsMain:
             return eventAssociationsMain[event] + getSystem(load(journalPath))
         elif event in eventAssociationsDocked:

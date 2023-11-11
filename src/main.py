@@ -5,6 +5,7 @@ import os
 import pystray
 from PIL import Image
 import threading
+import sys
 
 from log import log
 from game import getCMDR, load, eventHandler
@@ -17,7 +18,7 @@ shutdownBool = False
 
 #the icon for the tray
 def create_icon():
-    image = Image.open('D:\github\EDDP\EDDP\icon.png')
+    image = Image.open(str(os.getcwd()) + '\\src\\icon.png')
     icon = pystray.Icon("EDDP", image)
     #action for exit
     def action(icon, item):
@@ -77,6 +78,7 @@ def mainGameLoop():
     log("Starting game loop", "mainGameLoop")
     currently = " "
     start_time = int(time.time())
+    now = ".."
 
     with Presence(client_id) as presence:
         logFileLoaded = load("C:/Users/"+username+"/Saved Games/Frontier Developments/Elite Dangerous")
@@ -116,5 +118,8 @@ if __name__ == "__main__":
 
     # Start the thread
     icon_thread.start()
-    #mainGameLoop()
-    awaitGame()
+    if 'debugpy' in sys.modules:
+        log("Running in VSC debug mode!", "debug")
+        mainGameLoop()
+    else:
+        awaitGame()
