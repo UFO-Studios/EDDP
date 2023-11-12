@@ -117,7 +117,7 @@ def getStation(logs):
                 if logLine["event"] == "Location":
                     station_name = logLine.get("StationName", "")
                     log(f"Found station: {station_name}", "getStation")
-                if logLine["DockingRequested"] != None:
+                if "Docked" in logLine:
                     station_name = logLine.get("StationName", "")
                     log(f"Found station: {station_name}", "getStation")
             except Exception:  # If it gets muddled, it will return "Unknown station"
