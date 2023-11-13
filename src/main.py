@@ -22,11 +22,10 @@ def create_icon():
     icon = pystray.Icon("EDDP", image)
     #action for exit
     def action(icon, item):
-        shutdownBool = True
-        icon.stop()
+        exit(1)
     #action for the status text
     def action_online(icon, item):
-        log("Online!")
+        log("Online!", "tray")
 
     # Add a menu item to the icon
     icon.menu = pystray.Menu(

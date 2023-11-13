@@ -72,7 +72,7 @@ def getCMDR(logs):
     cmdr_name = " "
     if len(logs) < 2:
         log("Game not fully loaded, skipping update for now...", "getCMDR")
-        return EOFError
+        return 1
     for logLine in logs:
         if "event" in logLine:
             try:
@@ -118,6 +118,7 @@ def getStation(logs):
         if "event" in logLine:
             try:
                 if logLine["event"] == "Location":
+                    log("Location entry detected!", "getStation")
                     station_name = logLine.get("StationName", "")
                     log(f"Found station: {station_name}", "getStation")
                 if "Docked" in logLine:
