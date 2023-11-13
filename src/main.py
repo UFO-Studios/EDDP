@@ -95,6 +95,9 @@ def mainGameLoop():
             logs = load("C:/Users/"+username+"/Saved Games/Frontier Developments/Elite Dangerous")
             j = 0
             while j < len(logs):
+                if len(logs) < 2:
+                    log("Game not fully loaded, skipping update for now...", "mainGameLoop")
+                    break
                 logLineNow = logs[j]
                 now = eventHandler(logLineNow["event"], j)
                 log("Event: " + str(now) + " No: " + str(j), "mainGameLoop")
