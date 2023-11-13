@@ -53,7 +53,7 @@ def awaitGame():
             pass
 
 def updatePrecense(presence, state, start_time, cmdr):
-    state = str(state) + ".."
+    state = str(state) + ""
     presence.set(
         {
             "state": str(state),
@@ -69,6 +69,8 @@ def updatePrecense(presence, state, start_time, cmdr):
             
         }
     )
+    log("Presence updated", "updatePrecense")
+
 
 client_id = "1170388114498392095"  
 
@@ -78,18 +80,21 @@ def mainGameLoop():
     log("Starting game loop", "mainGameLoop")
     currently = " "
     start_time = int(time.time())
-    now = ".."
+    now = "  "
 
     with Presence(client_id) as presence:
         logFileLoaded = load("C:/Users/"+username+"/Saved Games/Frontier Developments/Elite Dangerous")
         log("Connected", "mainGameLoop")
         cmdr = getCMDR(logFileLoaded)
+        if cmdr == 1:
+            log("CMDR not found, trying again in 3s", "mainGameLoop.initBoot")
+            time.sleep(3)
+            mainGameLoop()
         updatePrecense(presence, "In the main menu", start_time, cmdr)
-        log("Presence updated", "mainGameLoop")
 
         while True:
             if shutdownBool == True:
-                log("Shutdown detected, exiting...", "mainGameLoop")
+                log("Shutdown detected, exiting...", "mainGameLoop.shutdownDetect")
                 break
             time.sleep(15)
             logs = load("C:/Users/"+username+"/Saved Games/Frontier Developments/Elite Dangerous")

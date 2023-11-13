@@ -70,6 +70,9 @@ def getCMDR(logs):
     log("Parsing log data", "getCMDR")
     logs.reverse()  # becuase we want the first one. Undoes line 34
     cmdr_name = " "
+    if len(logs) < 2:
+        log("Game not fully loaded, skipping update for now...", "getCMDR")
+        return EOFError
     for logLine in logs:
         if "event" in logLine:
             try:
@@ -120,6 +123,10 @@ def getStation(logs):
                 if "Docked" in logLine:
                     station_name = logLine.get("StationName", "")
                     log(f"Found station: {station_name}", "getStation")
+                else:
+                    log("No station found", "getStation")
+                    station_name = "Unknown station"
+                    return station_name
             except Exception:  # If it gets muddled, it will return "Unknown station"
                 log("No station found", "getStation")
                 station_name = "Unknown station"
