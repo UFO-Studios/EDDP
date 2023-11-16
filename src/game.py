@@ -19,13 +19,12 @@ global eventAssociationsDocked
 global eventAssociationsCombat
 global eventAssociationsPlanetside
 eventAssociationsMain = {
-    "SupercruiseEntry": "Supercrusing in ",
+    "SupercruiseEntry": "Supercrusing in ", 
     "SupercruiseExit": "Flying around ",
     "FSDJump": "Supercrusing in ",
-    #"FSSSignalDiscovered": "Supercrusing in ",
     "Undocked": "Flying in ",
     "LeaveBody": "Flying in ",
-}
+    }
 eventAssociationsDocked = {
     "Touchdown": "Landed on ",
     "Docked": "Docked at ",
@@ -85,11 +84,14 @@ def getCMDR(logs):
                 return "Unknown"
 
 
-def getSystem(logs):
+def getSystem(logs, gm=False):
     """
     Returns the system name as a string.
     Accepts logs as a list. (array)
     """
+    if gm == True:
+        log("Ghost mode active. Skipping...", "getSystem")
+        return
     log("Parsing log data - looking for system name", "getSystem")
     system_name = " "
     for logLine in logs:
@@ -108,11 +110,13 @@ def getSystem(logs):
                 return "Unknown system"
 
 
-def getStation(logs):
+def getStation(logs, ghostMode=False):
     """
     Returns the station name as a string.
     Accepts logs as a list. (array)
     """
+    if ghostMode == True:
+        log("Ghost mode active. Skipping...", "getStation")
     log("Parsing log data - looking for station", "getStation")
     for logLine in logs:
         if "event" in logLine:
@@ -135,7 +139,7 @@ def getStation(logs):
 
 
 
-def eventHandler(event, logLineNum=0):
+def eventHandler(event, logLineNum=0, ghostMode=False):
     """
     Event handler for journal events.
     Run once per line.
@@ -146,29 +150,53 @@ def eventHandler(event, logLineNum=0):
     """
     log(f"Parsing log data - looking for events in {event}...", "eventHandler")
 
-    # Error handling
-    if event == "Shutdown":
-        return 0
-    try:
-        if event == "Location":
+    if ghostMode == True:
+        log("Ghost mode on!", "eventHandler")
+        match event:
+            case "Shutdown":
+                return 0
+            case "Location":
+                log("Location entry detected!", "eventHandler")
+                fullLogLine = load(journalPath)[logLineNum]
+                if fullLogLine["Docked"] == True:
+                    log("Docked", "eventHandler")
+                    return "Docked"
+                else:
+                    log("Not docked", "eventHandler")
+                    return "Flying around"
+            case _ if event in eventAssociationsMain:
+                return "Flying around"
+            case _ if event in eventAssociationsDocked:
+                return "Docked"
+            case _ if event in eventAssociationsCombat:
+                return eventAssociationsCombat[event]
+            case _ if event in eventAssociationsPlanetside:
+                return "Exploring a planet"
+            case _:
+                return 1
+    
+        
+
+    match event:
+        case "Shutdown":
+            return 0
+        case "Location":
             log("Location entry detected!", "eventHandler")
             fullLogLine = load(journalPath)[logLineNum]
             if fullLogLine["Docked"] == True:
                 log("Docked", "eventHandler")
-                return "Docked at " + getStation(load(journalPath))
+                return "Docked at " + getStation(load(journalPath), ghostMode)
             else:
                 log("Not docked", "eventHandler")
-                return "Flying around " + getSystem(load(journalPath))
-        if event in eventAssociationsMain:
-            return eventAssociationsMain[event] + getSystem(load(journalPath))
-        elif event in eventAssociationsDocked:
-            return eventAssociationsDocked[event] + getStation(load(journalPath))
-        elif event in eventAssociationsCombat:
+                return "Flying around " + getSystem(load(journalPath), ghostMode)
+        case _ if event in eventAssociationsMain:
+            return eventAssociationsMain[event] + getSystem(load(journalPath), ghostMode)
+        case _ if event in eventAssociationsDocked:
+            return eventAssociationsDocked[event] + getStation(load(journalPath), ghostMode)
+        case _ if event in eventAssociationsCombat:
             return eventAssociationsCombat[event]
-        elif event in eventAssociationsPlanetside:
-            return eventAssociationsPlanetside[event] + getSystem(load(journalPath))
-        else:
+        case _ if event in eventAssociationsPlanetside:
+            return eventAssociationsPlanetside[event] + getSystem(load(journalPath), ghostMode)
+        case _:
             return 1
-    except Exception:
-        return 1
         

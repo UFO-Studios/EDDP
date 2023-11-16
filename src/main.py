@@ -2,42 +2,27 @@ from discordrp import Presence
 import time
 import getpass
 import os
-import pystray
-from PIL import Image
 import threading
+import queue
 import sys
 
+Queue = queue.Queue()
+from iconTray import createIcon
 from log import log
 from game import getCMDR, load, eventHandler
 global username
 username = getpass.getuser()
 global currently
 currently = "nope"
-global shutdownBool
-shutdownBool = False
-
-#the icon for the tray
-def create_icon():
-    image = Image.open(str(os.getcwd()) + '\\src\\icon.png')
-    icon = pystray.Icon("EDDP", image)
-    #action for exit
-    def action(icon, item):
-        exit(1)
-    #action for the status text
-    def action_online(icon, item):
-        log("Online!", "tray")
-
-    # Add a menu item to the icon
-    icon.menu = pystray.Menu(
-        pystray.MenuItem('Online!', action_online),
-        pystray.MenuItem('Quit', action)
-        )
-
-    # Run the icon
-    icon.run()
 
 
 def awaitGame():
+    """
+    Detects the game launch by checking for new journal files.
+    Runs mainGameLoop() when the game is found.
+    Checks every 15s.
+    Does not return anything.
+    """
     log("Awaiting game", "awaitGame")
     while True:
         #list logs dir
@@ -52,7 +37,16 @@ def awaitGame():
             pass
 
 def updatePrecense(presence, state, start_time, cmdr):
-    state = str(state) + ""
+    """
+    Updated the data send to discord
+    Inputs:
+    presence: the discordrp.Presence object
+    state: The main message to be displayed
+    start_time: the time the game was started (int)
+    cmdr: the cmdr's name
+    Does not return anything
+    """
+    state = str(state) + "  "
     presence.set(
         {
             "state": str(state),
@@ -92,9 +86,12 @@ def mainGameLoop():
         updatePrecense(presence, "In the main menu", start_time, cmdr)
 
         while True:
-            if shutdownBool == True:
-                log("Shutdown detected, exiting...", "mainGameLoop.shutdownDetect")
+            if Queue.get() == "exit":
+                log("Exiting...", "mainGameLoop")
                 break
+            elif Queue.get() == "ghostModeOn":
+                log("Ghost mode enabled", "mainGameLoop")
+                
             time.sleep(15)
             logs = load("C:/Users/"+username+"/Saved Games/Frontier Developments/Elite Dangerous")
             j = 0
@@ -115,18 +112,25 @@ def mainGameLoop():
 
             if now == 0:
                 log("Exiting...", "mainGameLoop")
-                exit()
+                
                 
             updatePrecense(presence, currently, start_time, cmdr)
             
             
-if __name__ == "__main__":
-    icon_thread = threading.Thread(target=create_icon)
-
-    # Start the thread
-    icon_thread.start()
+def main():
     if 'debugpy' in sys.modules:
         log("Running in VSC debug mode!", "debug")
         mainGameLoop()
     else:
         awaitGame()
+
+if __name__ == "__main__":
+    log("Starting...", "__name__")
+    icon_thread = threading.Thread(target=createIcon(Queue))
+    game_thread = threading.Thread(target=main)
+    icon_thread.start()
+    game_thread.start()
+    time.sleep(2)
+    log("All threads running! ", "__name__")
+else:
+    log("Uh-Oh you seem to be importing this! Try running the main.py file instead!", "__name__")
