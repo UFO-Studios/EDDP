@@ -1,4 +1,4 @@
-from discordrp import Presence
+from discordrpc import Presence
 import time
 import getpass
 import os

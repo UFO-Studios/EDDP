@@ -1,1 +1,1 @@
-pypresence==4.3.0
+discordrpc==0.0.0
