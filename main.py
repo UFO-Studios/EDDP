@@ -5,6 +5,7 @@ import os
 import pystray
 from PIL import Image
 import threading
+from tts import ttsSay
 
 from game import getCMDR, load, eventHandler
 global username
@@ -13,6 +14,10 @@ global currently
 currently = "nope"
 global shutdownBool
 shutdownBool = False
+global TTS
+TTS = False
+global oldPresence
+oldPresence = " "
 
 #the icon for the tray
 def create_icon():
@@ -25,10 +30,21 @@ def create_icon():
     #action for the status text
     def action_online(icon, item):
         print("Online!")
+    
+    def action_tts(icon, item):
+        print("TTS toggeled")
+        if TTS == False:
+            TTS = True
+            ttsSay("Text to speech enabled")
+        else:
+            TTS = False
+            ttsSay("Text to speech disabled")
+        
 
     # Add a menu item to the icon
     icon.menu = pystray.Menu(
         pystray.MenuItem('Online!', action_online),
+        pystray.MenuItem('TTS', action_tts),
         pystray.MenuItem('Quit', action)
         )
 
@@ -61,12 +77,10 @@ def updatePrecense(presence, state, start_time, cmdr):
             },
             "assets": {
                 "large_image": "ed_main",  
-
             },
-
-            
         }
     )
+
 
 client_id = "1170388114498392095"  
 
@@ -100,6 +114,10 @@ def mainGameLoop():
                     break
                 else: 
                     pass
+            if currently != oldPresence:
+                if TTS == True:
+                    ttsSay(currently)
+                oldPresence = currently
             updatePrecense(presence, currently, start_time, cmdr)
             
             
