@@ -22,7 +22,7 @@ The exe should show up in your system tray (bottom right) when running<br></br>
 - Q: How do I know this is safe?
 - A: You can check the source code yourself, or you can download the exe from the releases page. The EXE is signed with my GPG key, and the signature is avalible on the releases page. You should expect the following output when running `gpg --verify EDDP.exe.sig EDDP.exe`:
 <br></br>
-![GPG output](https://cdn.niceygylive.xyz/gpg.png)
+
 
 - Q: What do I do if I find a bug?
 - A: Open an issue! You can open them [here](https://github.com/ufo-studios/eddp/issues)
